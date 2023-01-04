@@ -1,0 +1,36 @@
+{
+	"name": "DestinationDataset_m9g",
+	"properties": {
+		"annotations": [],
+		"type": "SqlPoolTable",
+		"schema": [
+			{
+				"name": "StoreCode",
+				"type": "varchar"
+			},
+			{
+				"name": "SaleDate",
+				"type": "datetime2",
+				"scale": 7
+			},
+			{
+				"name": "TotalSales",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "TotalAmount",
+				"type": "int",
+				"precision": 10
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "DailySales"
+		},
+		"sqlPool": {
+			"referenceName": "salesdw",
+			"type": "SqlPoolReference"
+		}
+	}
+}
