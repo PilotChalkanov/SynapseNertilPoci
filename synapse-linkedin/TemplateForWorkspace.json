@@ -331,6 +331,26 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/DailySCopyTable')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "CREATE TABLE dbo.DailySalesCopyCommand\n(\n    StoreCode VARCHAR(100) NOT NULL,\n    SaleDate DATETIME2 NOT NULL,\n    TotalSales INT NOT NULL,\n    TotalAmount INT NOT NULL\n)\nWITH(\n    DISTRIBUTION = HASH(StoreCode),\n    CLUSTERED COLUMNSTORE INDEX\n)\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "salesdw",
+						"poolName": "salesdw"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/salesdw')]",
 			"type": "Microsoft.Synapse/workspaces/sqlPools",
 			"apiVersion": "2019-06-01-preview",
@@ -343,12 +363,12 @@
 			"location": "uksouth"
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/SQL script 1')]",
+			"name": "[concat(parameters('workspaceName'), '/CopyCommand')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"content": {
-					"query": "SELECT TOP 100 * FROM dbo.DailySales",
+					"query": "COPY INTO dbo.DailySalesCopyCommand\n(StoredCode default '0000' 1, Date 2, TotalSales 3, TotalAmount 4)\nfrom 'https://chalkilinkedin.blob.core.windows.net/sales/**'\nWITH \n(\n    FILE_TYPE = 'CSV',\n    CREDENTIAL = (IDENTITY = 'Shared Acess Signiture',\n    SECRET= '?sv=2021-04-10&st=2023-01-04T11%3A25%3A10Z&se=2023-03-31T10%3A25%3A00Z&sr=c&sp=rl&sig=iAU6%2Fhslmki4A6Ycx7K4XdoMV4aFSzXh7WLr%2FPcfaUE%3D',\n    ENCODING = 'UTF-8',\n    FIELDTERMINATOR = ',',\n    FIRSTROW=2\n)\n",
 					"metadata": {
 						"language": "sql"
 					},
