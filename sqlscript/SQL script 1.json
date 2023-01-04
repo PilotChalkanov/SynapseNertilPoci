@@ -2,13 +2,13 @@
 	"name": "SQL script 1",
 	"properties": {
 		"content": {
-			"query": "CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'VerySecretPassword'\n\nCREATE DATABASE SCOPED CREDENTIAL SalesDataCredentials\n    WITH IDENTITY = 'user', Secret = ''\n\n",
+			"query": "DROP MASTER KEY\nCREATE MASTER KEY ENCRYPTION BY PASSWORD = 'VerySecretPassword@@';\n\nCREATE DATABASE SCOPED CREDENTIAL SalesDataCredentials\n    WITH IDENTITY = 'user', Secret = '5k89N5ixOmJJ2dhOGmz/Xi6XbRLpTYxgT+guSujk4yFDQVfw7RbwYZcuE6woaWrPpQcQm2nfeIiv+AStooqQTQ==';\n\nCREATE EXTERNAL DATA SOURCE SalesDataSource WITH\n( TYPE = HADOOP,)\n",
 			"metadata": {
 				"language": "sql"
 			},
 			"currentConnection": {
-				"databaseName": "master",
-				"poolName": "Built-in"
+				"databaseName": "salesdw",
+				"poolName": "salesdw"
 			},
 			"resultLimit": 5000
 		},
