@@ -1,0 +1,39 @@
+{
+	"name": "SourceDataset_m9g",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "synapse-linkedin-WorkspaceDefaultStorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileSystem": "sales"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "StoreCode",
+				"type": "String"
+			},
+			{
+				"name": "Date",
+				"type": "String"
+			},
+			{
+				"name": "TotalSales",
+				"type": "String"
+			},
+			{
+				"name": "TotalAmount",
+				"type": "String"
+			}
+		]
+	}
+}
