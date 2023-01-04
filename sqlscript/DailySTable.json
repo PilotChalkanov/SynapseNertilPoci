@@ -1,0 +1,17 @@
+{
+	"name": "DailySTable",
+	"properties": {
+		"content": {
+			"query": "CREATE TABLE dbo.DailySales\n(\n    StoreCode VARCHAR(100) NOT NULL,\n    SaleDate DATETIME2 NOT NULL,\n    TotalSales INT NOT NULL,\n    TotalAmount INT NOT NULL\n)\nWITH(\n    DISTRIBUTION = HASH(StoreCode),\n    CLUSTERED COLUMNSTORE INDEX\n)\nGO",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "salesdw",
+				"poolName": "salesdw"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
