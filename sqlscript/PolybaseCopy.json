@@ -1,8 +1,8 @@
 {
-	"name": "SQL script 1",
+	"name": "PolybaseCopy",
 	"properties": {
 		"content": {
-			"query": "DROP MASTER KEY\nCREATE MASTER KEY ENCRYPTION BY PASSWORD = 'VerySecretPassword@@';\n\nCREATE DATABASE SCOPED CREDENTIAL SalesDataCredentials\n    WITH IDENTITY = 'user', Secret = '5k89N5ixOmJJ2dhOGmz/Xi6XbRLpTYxgT+guSujk4yFDQVfw7RbwYZcuE6woaWrPpQcQm2nfeIiv+AStooqQTQ==';\n\nCREATE EXTERNAL DATA SOURCE SalesDataSource WITH\n( TYPE = HADOOP,)\n",
+			"query": "DROP MASTER KEY\nCREATE MASTER KEY ENCRYPTION BY PASSWORD = 'VerySecretPassword@@';\n\nCREATE DATABASE SCOPED CREDENTIAL SalesDataCredentials\n    WITH IDENTITY = 'user', Secret = '5k89N5ixOmJJ2dhOGmz/Xi6XbRLpTYxgT+guSujk4yFDQVfw7RbwYZcuE6woaWrPpQcQm2nfeIiv+AStooqQTQ==';\n\nCREATE EXTERNAL DATA SOURCE SalesDataSource WITH\n( TYPE = HADOOP,\nLOCATION = 'adls://sales@chalkilinkedin.dfs.core.windows.net',\nCREDENTIAL =SalesDataCredentials ,\n)\n",
 			"metadata": {
 				"language": "sql"
 			},
