@@ -8,6 +8,9 @@
 		"synapse-linkedin-WorkspaceDefaultSqlServer_connectionString": {
 			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:synapse-linkedin.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
 		},
+		"chalki_key_vault_properties_typeProperties_baseUrl": {
+			"value": "https://formula1-chalki-vault.vault.azure.net/"
+		},
 		"synapse-linkedin-WorkspaceDefaultStorage_properties_typeProperties_url": {
 			"value": "https://chalkilinkedin.dfs.core.windows.net"
 		}
