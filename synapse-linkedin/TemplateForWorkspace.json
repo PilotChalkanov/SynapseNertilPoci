@@ -332,6 +332,9 @@
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
+				"folder": {
+					"name": "DedicatedSqlPool"
+				},
 				"content": {
 					"query": "COPY INTO dbo.DailySalesCopyCommand\n(StoreCode default '0000' 1, SaleDate 2, TotalSales 3, TotalAmount 4)\nfrom 'https://chalkilinkedin.blob.core.windows.net/sales/**'\nWITH \n(\n    FILE_TYPE = 'CSV',\n    CREDENTIAL = (IDENTITY = 'Shared Access Signature',\n    SECRET= '?sv=2021-04-10&st=2023-01-04T11%3A25%3A10Z&se=2023-03-31T10%3A25%3A00Z&sr=c&sp=rl&sig=iAU6%2Fhslmki4A6Ycx7K4XdoMV4aFSzXh7WLr%2FPcfaUE%3D'),\n    ENCODING = 'UTF8',\n    FIELDTERMINATOR = ',',\n    FIRSTROW=2\n)\n",
 					"metadata": {
@@ -352,6 +355,9 @@
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
+				"folder": {
+					"name": "DedicatedSqlPool"
+				},
 				"content": {
 					"query": "CREATE TABLE dbo.DailySalesCopyCommand\n(\n    StoreCode VARCHAR(100) NOT NULL,\n    SaleDate DATETIME2 NOT NULL,\n    TotalSales INT NOT NULL,\n    TotalAmount INT NOT NULL\n)\nWITH(\n    DISTRIBUTION = HASH(StoreCode),\n    CLUSTERED COLUMNSTORE INDEX\n)\nGO",
 					"metadata": {
@@ -372,6 +378,9 @@
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
+				"folder": {
+					"name": "DedicatedSqlPool"
+				},
 				"content": {
 					"query": "CREATE TABLE dbo.DailySales\n(\n    StoreCode VARCHAR(100) NOT NULL,\n    SaleDate DATETIME2 NOT NULL,\n    TotalSales INT NOT NULL,\n    TotalAmount INT NOT NULL\n)\nWITH(\n    DISTRIBUTION = HASH(StoreCode),\n    CLUSTERED COLUMNSTORE INDEX\n)\nGO",
 					"metadata": {
@@ -392,14 +401,17 @@
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
+				"folder": {
+					"name": "DedicatedSqlPool"
+				},
 				"content": {
-					"query": "DROP MASTER KEY\nCREATE MASTER KEY ENCRYPTION BY PASSWORD = 'VerySecretPassword@@';\n\nCREATE DATABASE SCOPED CREDENTIAL SalesDataCredentials\n    WITH IDENTITY = 'user', Secret = '5k89N5ixOmJJ2dhOGmz/Xi6XbRLpTYxgT+guSujk4yFDQVfw7RbwYZcuE6woaWrPpQcQm2nfeIiv+AStooqQTQ==';\n\nCREATE EXTERNAL DATA SOURCE SalesDataSource WITH\n( TYPE = HADOOP,\nLOCATION = 'abfs://sales@chalkilinkedin.dfs.core.windows.net',\nCREDENTIAL =SalesDataCredentials\n)\n\nCREATE EXTERNAL FILE FORMAT textdelimited1\nWITH (\n    FORMAT_TYPE = DELIMITEDTEXT,\n    FORMAT_OPTIONS (\n        FIELD_TERMINATOR = ',',\n        STRING_DELIMITER = '\"',\n        FIRST_ROW = 2\n        )\n);\n\nCREATE EXTERNAL TABLE dbo.DailySales_poly\n(\n    StoreCode VARCHAR(100) NOT NULL,\n    SaleDate DATETIME2 NOT NULL,\n    TotalSales INT NOT NULL,\n    TotalAmount INT NOT NULL\n)\nWITH (\n    LOCATION = 'SalesData/sales-1.csv',\n    DATA_SOURCE = SalesDataSource,\n    FILE_FORMAT = textdelimited1,\n    REJECT_TYPE = value,\n    REJECT_VALUE = 0\n);\n\nSELECT TOP 10 * FROM dbo.DailySales_poly\n\n\nCREATE TABLE dbo.DailySales_CTAS\nWITH (DISTRIBUTION= HASH(StoreCode)\n) AS\nSELECT * FROM dbo.DailySales_poly;\n",
+					"query": "DROP MASTER KEY\nCREATE MASTER KEY ENCRYPTION BY PASSWORD = 'VerySecretPassword@@';\n\nCREATE DATABASE SCOPED CREDENTIAL SalesDataCredentials\n    WITH IDENTITY = 'user', Secret = '5k89N5ixOmJJ2dhOGmz/Xi6XbRLpTYxgT+guSujk4yFDQVfw7RbwYZcuE6woaWrPpQcQm2nfeIiv+AStooqQTQ==';\n\nCREATE EXTERNAL DATA SOURCE SalesDataSource WITH\n( TYPE = HADOOP,\nLOCATION = 'abfs://sales@chalkilinkedin.dfs.core.windows.net',\nCREDENTIAL =SalesDataCredentials\n)\n\nCREATE EXTERNAL FILE FORMAT textdelimited1\nWITH (\n    FORMAT_TYPE = DELIMITEDTEXT,\n    FORMAT_OPTIONS (\n        FIELD_TERMINATOR = ',',\n        STRING_DELIMITER = '\"',\n        FIRST_ROW = 2\n        )\n);\nDROP EXTERNAL table dbo.DailySales_poly;\nCREATE EXTERNAL TABLE dbo.DailySales_poly\n(\n    StoreCode VARCHAR(100) NOT NULL,\n    SaleDate DATETIME2 NOT NULL,\n    TotalSales INT NOT NULL,\n    TotalAmount INT NOT NULL\n)\nWITH (\n    LOCATION = 'SalesData/*.csv',\n    DATA_SOURCE = SalesDataSource,\n    FILE_FORMAT = textdelimited1,\n    REJECT_TYPE = value,\n    REJECT_VALUE = 0\n);\n\nSELECT TOP 10 * FROM dbo.DailySales_poly\n\n\nCREATE TABLE dbo.DailySales_CTAS\nWITH (DISTRIBUTION= HASH(StoreCode)\n) AS\nSELECT * FROM dbo.DailySales_poly;\n",
 					"metadata": {
 						"language": "sql"
 					},
 					"currentConnection": {
-						"databaseName": "salesdw",
-						"poolName": "salesdw"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -418,6 +430,75 @@
 			},
 			"dependsOn": [],
 			"location": "uksouth"
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/sales_data_discovery_01')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "ServerlessPool"
+				},
+				"content": {
+					"query": "select top 10 *\nfrom openrowset(\n    bulk 'https://chalkilinkedin.blob.core.windows.net/sales/SalesData',\n    parser_version = '2.0',\n    format='csv',\n    firstrow = 2\n     ) as row\n\n\nselect top 10 row.StoreCode, row.Date,row.TotalSales, row.TotalAmount AS [filename]\nfrom openrowset(\n    bulk 'https://chalkilinkedin.blob.core.windows.net/sales/SalesData',\n    parser_version = '2.0',\n    format='csv',\n    firstrow = 2 )\n    with(\n        StoreCode VARCHAR(100) 1,\n        Date DATE 2,\n        TotalSales BIGINT 3,\n        TotalAmount BIGINT 4\n    ) as row\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/sales_date_timestamp')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "ServerlessPool"
+				},
+				"content": {
+					"query": "SELECT TOP 10 *,\nrows.filepath(1) as file_folder,\nrows.filepath(2) as fpath,\nCAST(rows.filepath(2) AS DATE) AS IngestDate,\nrows.filename() as fname\n\nFROM \nOPENROWSET\n(\n    BULK 'https://chalkilinkedin.blob.core.windows.net/serverless-data/*/*.csv',\n    PARSER_VERSION = '2.0',\n    FORMAT = 'CSV',\n    FIRST_ROW = 2\n)\nAS rows\n\n\nSELECT TOP 10 *,\nCAST(rows.filepath(2) AS DATE) AS IngestDate\nFROM \nOPENROWSET\n(\n    BULK 'https://chalkilinkedin.blob.core.windows.net/serverless-data/*/*.csv',\n    PARSER_VERSION = '2.0',\n    FORMAT = 'CSV',\n    FIRST_ROW = 2\n)\nAS rows\nWHERE CAST(rows.filepath(2) AS DATE) >= '2023-06-09'",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/create_logical_DWH')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "ServerlessPool"
+				},
+				"content": {
+					"query": "CREATE DATABASE SalesLDW\nALTER DATABASE SalesLDW COLLATE Latin1_General_100_BIN2_UTF8;\n\nCREATE MASTER KEY ENCRYPTION BY PASSWORD = 'SuperSecretEncryptionKey$$';\n\nCREATE DATABASE SCOPED CREDENTIAL SalesStorageCredentials\nWITH IDENTITY = 'SHARED ACCESS SIGNATURE',\n    SECRET = '?sv=2020-02-10&st=2023-01-08T11%3A01%3A30Z&se=2023-01-16T11%3A01%3A00Z&sr=d&sp=racwdlmeop&sig=b5STnvN0HB1PuGCO04YhGaBxl4%2FOPyOd60ye%2BQs%2B%2F8E%3D&sdd=1';\n\nCREATE EXTERNAL DATA SOURCE SalesData WITH (\n    CREDENTIAL = SalesStorageCredentials,\n    LOCATION = 'https://chalkilinkedin.blob.core.windows.net');\n\nCREATE SCHEMA LDW authorization dbo;\n\nCREATE VIEW LDW.DailySalesView\nAS\nSELECT *,\nCAST(rows.filepath(1) AS DATE) AS IngestDate\nFROM \nOPENROWSET(\n    BULK'serverless-data/PartitionedSalesData/*.csv',\n    DATA_SOURCE = 'SalesData',\n    PARSER_VERSION = '2.0',\n    FORMAT = 'CSV',\n    FIRSTROW = 2\n)\nWITH (\n    StoreCode VARCHAR(200) 1,\n    TotalSales BIGINT 2,\n    TotalAmount BIGINT 3\n)\nAS rows;\n\nSELECT TOP 10 * FROM LDW.DailySalesView;\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "SalesLDW",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
 		}
 	]
 }
