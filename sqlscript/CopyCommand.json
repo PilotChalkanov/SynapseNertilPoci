@@ -1,6 +1,9 @@
 {
 	"name": "CopyCommand",
 	"properties": {
+		"folder": {
+			"name": "DedicatedSqlPool"
+		},
 		"content": {
 			"query": "COPY INTO dbo.DailySalesCopyCommand\n(StoreCode default '0000' 1, SaleDate 2, TotalSales 3, TotalAmount 4)\nfrom 'https://chalkilinkedin.blob.core.windows.net/sales/**'\nWITH \n(\n    FILE_TYPE = 'CSV',\n    CREDENTIAL = (IDENTITY = 'Shared Access Signature',\n    SECRET= '?sv=2021-04-10&st=2023-01-04T11%3A25%3A10Z&se=2023-03-31T10%3A25%3A00Z&sr=c&sp=rl&sig=iAU6%2Fhslmki4A6Ycx7K4XdoMV4aFSzXh7WLr%2FPcfaUE%3D'),\n    ENCODING = 'UTF8',\n    FIELDTERMINATOR = ',',\n    FIRSTROW=2\n)\n",
 			"metadata": {

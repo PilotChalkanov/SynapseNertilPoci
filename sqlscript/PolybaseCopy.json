@@ -1,14 +1,17 @@
 {
 	"name": "PolybaseCopy",
 	"properties": {
+		"folder": {
+			"name": "DedicatedSqlPool"
+		},
 		"content": {
-			"query": "DROP MASTER KEY\nCREATE MASTER KEY ENCRYPTION BY PASSWORD = 'VerySecretPassword@@';\n\nCREATE DATABASE SCOPED CREDENTIAL SalesDataCredentials\n    WITH IDENTITY = 'user', Secret = '5k89N5ixOmJJ2dhOGmz/Xi6XbRLpTYxgT+guSujk4yFDQVfw7RbwYZcuE6woaWrPpQcQm2nfeIiv+AStooqQTQ==';\n\nCREATE EXTERNAL DATA SOURCE SalesDataSource WITH\n( TYPE = HADOOP,\nLOCATION = 'abfs://sales@chalkilinkedin.dfs.core.windows.net',\nCREDENTIAL =SalesDataCredentials\n)\n\nCREATE EXTERNAL FILE FORMAT textdelimited1\nWITH (\n    FORMAT_TYPE = DELIMITEDTEXT,\n    FORMAT_OPTIONS (\n        FIELD_TERMINATOR = ',',\n        STRING_DELIMITER = '\"',\n        FIRST_ROW = 2\n        )\n);\n\nCREATE EXTERNAL TABLE dbo.DailySales_poly\n(\n    StoreCode VARCHAR(100) NOT NULL,\n    SaleDate DATETIME2 NOT NULL,\n    TotalSales INT NOT NULL,\n    TotalAmount INT NOT NULL\n)\nWITH (\n    LOCATION = 'SalesData/sales-1.csv',\n    DATA_SOURCE = SalesDataSource,\n    FILE_FORMAT = textdelimited1,\n    REJECT_TYPE = value,\n    REJECT_VALUE = 0\n);\n\nSELECT TOP 10 * FROM dbo.DailySales_poly\n\n\nCREATE TABLE dbo.DailySales_CTAS\nWITH (DISTRIBUTION= HASH(StoreCode)\n) AS\nSELECT * FROM dbo.DailySales_poly;\n",
+			"query": "DROP MASTER KEY\nCREATE MASTER KEY ENCRYPTION BY PASSWORD = 'VerySecretPassword@@';\n\nCREATE DATABASE SCOPED CREDENTIAL SalesDataCredentials\n    WITH IDENTITY = 'user', Secret = '5k89N5ixOmJJ2dhOGmz/Xi6XbRLpTYxgT+guSujk4yFDQVfw7RbwYZcuE6woaWrPpQcQm2nfeIiv+AStooqQTQ==';\n\nCREATE EXTERNAL DATA SOURCE SalesDataSource WITH\n( TYPE = HADOOP,\nLOCATION = 'abfs://sales@chalkilinkedin.dfs.core.windows.net',\nCREDENTIAL =SalesDataCredentials\n)\n\nCREATE EXTERNAL FILE FORMAT textdelimited1\nWITH (\n    FORMAT_TYPE = DELIMITEDTEXT,\n    FORMAT_OPTIONS (\n        FIELD_TERMINATOR = ',',\n        STRING_DELIMITER = '\"',\n        FIRST_ROW = 2\n        )\n);\nDROP EXTERNAL table dbo.DailySales_poly;\nCREATE EXTERNAL TABLE dbo.DailySales_poly\n(\n    StoreCode VARCHAR(100) NOT NULL,\n    SaleDate DATETIME2 NOT NULL,\n    TotalSales INT NOT NULL,\n    TotalAmount INT NOT NULL\n)\nWITH (\n    LOCATION = 'SalesData/*.csv',\n    DATA_SOURCE = SalesDataSource,\n    FILE_FORMAT = textdelimited1,\n    REJECT_TYPE = value,\n    REJECT_VALUE = 0\n);\n\nSELECT TOP 10 * FROM dbo.DailySales_poly\n\n\nCREATE TABLE dbo.DailySales_CTAS\nWITH (DISTRIBUTION= HASH(StoreCode)\n) AS\nSELECT * FROM dbo.DailySales_poly;\n",
 			"metadata": {
 				"language": "sql"
 			},
 			"currentConnection": {
-				"databaseName": "salesdw",
-				"poolName": "salesdw"
+				"databaseName": "master",
+				"poolName": "Built-in"
 			},
 			"resultLimit": 5000
 		},

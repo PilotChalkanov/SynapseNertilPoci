@@ -1,6 +1,9 @@
 {
 	"name": "DailySCopyTable",
 	"properties": {
+		"folder": {
+			"name": "DedicatedSqlPool"
+		},
 		"content": {
 			"query": "CREATE TABLE dbo.DailySalesCopyCommand\n(\n    StoreCode VARCHAR(100) NOT NULL,\n    SaleDate DATETIME2 NOT NULL,\n    TotalSales INT NOT NULL,\n    TotalAmount INT NOT NULL\n)\nWITH(\n    DISTRIBUTION = HASH(StoreCode),\n    CLUSTERED COLUMNSTORE INDEX\n)\nGO",
 			"metadata": {

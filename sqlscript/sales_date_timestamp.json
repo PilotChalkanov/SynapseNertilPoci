@@ -1,0 +1,20 @@
+{
+	"name": "sales_date_timestamp",
+	"properties": {
+		"folder": {
+			"name": "ServerlessPool"
+		},
+		"content": {
+			"query": "SELECT TOP 10 *,\nrows.filepath(1) as file_folder,\nrows.filepath(2) as fpath,\nCAST(rows.filepath(2) AS DATE) AS IngestDate,\nrows.filename() as fname\n\nFROM \nOPENROWSET\n(\n    BULK 'https://chalkilinkedin.blob.core.windows.net/serverless-data/*/*.csv',\n    PARSER_VERSION = '2.0',\n    FORMAT = 'CSV',\n    FIRST_ROW = 2\n)\nAS rows\n\n\nSELECT TOP 10 *,\nCAST(rows.filepath(2) AS DATE) AS IngestDate\nFROM \nOPENROWSET\n(\n    BULK 'https://chalkilinkedin.blob.core.windows.net/serverless-data/*/*.csv',\n    PARSER_VERSION = '2.0',\n    FORMAT = 'CSV',\n    FIRST_ROW = 2\n)\nAS rows\nWHERE CAST(rows.filepath(2) AS DATE) >= '2023-06-09'",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

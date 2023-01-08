@@ -1,0 +1,20 @@
+{
+	"name": "sales_data_discovery_01",
+	"properties": {
+		"folder": {
+			"name": "ServerlessPool"
+		},
+		"content": {
+			"query": "select top 10 *\nfrom openrowset(\n    bulk 'https://chalkilinkedin.blob.core.windows.net/sales/SalesData',\n    parser_version = '2.0',\n    format='csv',\n    firstrow = 2\n     ) as row\n\n\nselect top 10 row.StoreCode, row.Date,row.TotalSales, row.TotalAmount AS [filename]\nfrom openrowset(\n    bulk 'https://chalkilinkedin.blob.core.windows.net/sales/SalesData',\n    parser_version = '2.0',\n    format='csv',\n    firstrow = 2 )\n    with(\n        StoreCode VARCHAR(100) 1,\n        Date DATE 2,\n        TotalSales BIGINT 3,\n        TotalAmount BIGINT 4\n    ) as row\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
