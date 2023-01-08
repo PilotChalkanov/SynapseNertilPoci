@@ -1,0 +1,20 @@
+{
+	"name": "stores_LDW",
+	"properties": {
+		"folder": {
+			"name": "ServerlessPool"
+		},
+		"content": {
+			"query": "CREATE DATABASE SCOPED CREDENTIAL StoresStorageCredentials\nWITH IDENTITY = 'SHARED ACCESS SIGNATURE',\n    SECRET = '?sv=2020-02-10&st=2023-01-08T11%3A45%3A15Z&se=2023-01-17T11%3A45%3A00Z&sr=c&sp=racwdlmeop&sig=U%2F75AXku49%2BMs0Xie%2Bs7PuKxbZqvSqG16HOhTzEb7q0%3D';\n\nCREATE EXTERNAL DATA SOURCE StoresData WITH (\n    CREDENTIAL = StoresStorageCredentials,\n    LOCATION = 'https://chalkilinkedin.blob.core.windows.net');\n\n\nCREATE VIEW LDW.StoresView\nAS\nSELECT *\nFROM\nOPENROWSET\n(\n    BULK'stores/stores.csv',\n    DATA_SOURCE = 'StoresData',\n    PARSER_VERSION = '2.0',\n    FORMAT = 'csv',\n    FIRSTROW = 2\n)\nWITH (\n    City VARCHAR(100) 1,\n    Code VARCHAR(10) 2,\n    Size VARCHAR(10) 3,\n    Lattitude VARCHAR(100) 4,\n    Longitude VARCHAR(100) 5,\n    Population BIGINT 6,\n    State VARCHAR(200) 7\n)\nAS rows",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "SalesLDW",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
