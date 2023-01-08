@@ -1,0 +1,20 @@
+{
+	"name": "DistributionCheck",
+	"properties": {
+		"folder": {
+			"name": "DedicatedSqlPool"
+		},
+		"content": {
+			"query": "DBCC PDW_SHOWSPACEUSED('dbo.DailySales')",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "salesdw",
+				"poolName": "salesdw"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

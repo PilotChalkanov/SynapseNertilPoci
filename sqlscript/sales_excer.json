@@ -1,0 +1,20 @@
+{
+	"name": "sales_excer",
+	"properties": {
+		"folder": {
+			"name": "ServerlessPool"
+		},
+		"content": {
+			"query": "SELECT TOP 10\nrows.filepath(1) as year_sales,\nrows.filepath(2) as month_sales,\nrows.filepath(3) as day_sales,\nCAST(CONCAT(rows.filepath(1),'-',rows.filepath(2),'-',rows.filepath(3)) AS DATE) AS IngestDate,\nrows.filename() as fname\n\nFROM \nOPENROWSET\n(\n    BULK 'https://chalkilinkedin.blob.core.windows.net/sales-excercises/*/*/*.csv',\n    PARSER_VERSION = '2.0',\n    FORMAT = 'CSV',\n    FIRST_ROW = 2\n)\nAS rows",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "SalesLDW",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
