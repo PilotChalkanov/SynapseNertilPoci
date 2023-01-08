@@ -547,7 +547,7 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/SQL script 1')]",
+			"name": "[concat(parameters('workspaceName'), '/statistics')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
@@ -562,6 +562,75 @@
 					"currentConnection": {
 						"databaseName": "SalesLDW",
 						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/sales_excer')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "ServerlessPool"
+				},
+				"content": {
+					"query": "SELECT TOP 10\nrows.filepath(1) as year_sales,\nrows.filepath(2) as month_sales,\nrows.filepath(3) as day_sales,\nCAST(CONCAT(rows.filepath(1),'-',rows.filepath(2),'-',rows.filepath(3)) AS DATE) AS IngestDate,\nrows.filename() as fname\n\nFROM \nOPENROWSET\n(\n    BULK 'https://chalkilinkedin.blob.core.windows.net/sales-excercises/*/*/*.csv',\n    PARSER_VERSION = '2.0',\n    FORMAT = 'CSV',\n    FIRST_ROW = 2\n)\nAS rows",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "SalesLDW",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/LabelQuery')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "DedicatedSqlPool"
+				},
+				"content": {
+					"query": "SELECT TOP (100) [StoreCode]\n,[SaleDate]\n,[TotalSales]\n,[TotalAmount]\n FROM [dbo].[DailySales]\n OPTION(\n     LABEL='Sales-TOP100'\n )\n\n SELECT * \n FROM sys.dm_pdw_exec_requests r\nORDER BY r.start_time desc",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "salesdw",
+						"poolName": "salesdw"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/DistributionCheck')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "DedicatedSqlPool"
+				},
+				"content": {
+					"query": "DBCC PDW_SHOWSPACEUSED('dbo.DailySales')",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "salesdw",
+						"poolName": "salesdw"
 					},
 					"resultLimit": 5000
 				},
