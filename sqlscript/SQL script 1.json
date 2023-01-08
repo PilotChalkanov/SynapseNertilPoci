@@ -1,0 +1,20 @@
+{
+	"name": "SQL script 1",
+	"properties": {
+		"folder": {
+			"name": "ServerlessPool"
+		},
+		"content": {
+			"query": "EXEC sys.sp_create_openrowset_statistics N'\nSELECT Code\nFROM\nOPENROWSET\n\n(\n    BULK''stores/stores.csv'',\n    DATA_SOURCE = ''StoresData'',\n    PARSER_VERSION = ''2.0'',\n    FORMAT = ''csv'',\n    FIRSTROW = 2\n)\nWITH (\n    City VARCHAR(100) 1,\n    Code VARCHAR(10) 2,\n    Size VARCHAR(10) 3,\n    Lattitude VARCHAR(100) 4,\n    Longitude VARCHAR(100) 5,\n    Population BIGINT 6,\n    State VARCHAR(200) 7\n)\nAS rows\n'\n\nsys.sp_drop_openrowset_statistics N'SELECT Code\nFROM\nOPENROWSET\n\n(\n    BULK''stores/stores.csv'',\n    DATA_SOURCE = ''StoresData'',\n    PARSER_VERSION = ''2.0'',\n    FORMAT = ''csv'',\n    FIRSTROW = 2\n)\nWITH (\n    City VARCHAR(100) 1,\n    Code VARCHAR(10) 2,\n    Size VARCHAR(10) 3,\n    Lattitude VARCHAR(100) 4,\n    Longitude VARCHAR(100) 5,\n    Population BIGINT 6,\n    State VARCHAR(200) 7\n)\nAS rows\n'",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "SalesLDW",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

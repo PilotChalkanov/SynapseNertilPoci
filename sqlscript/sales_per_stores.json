@@ -5,7 +5,7 @@
 			"name": "ServerlessPool"
 		},
 		"content": {
-			"query": "SELECT SUM(TotalAmount)\nFROM LDW.StoresView as stores\nINNER JOIN LDW.DailySalesView AS sales ON stores.Code = sales.StoreCode\nGROUP BY stores.Code",
+			"query": "SELECT \nstores.Code AS StoreCode,\nSUM(TotalAmount) AS TotalSalesAmount\nFROM LDW.StoresView as stores\nINNER JOIN LDW.DailySalesView AS sales ON stores.Code = sales.StoreCode\nGROUP BY stores.Code",
 			"metadata": {
 				"language": "sql"
 			},
