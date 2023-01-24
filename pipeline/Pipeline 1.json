@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"url": {
-						"value": "https://management.azure.com/subscriptions/be148484-ecb8-4812-bc40-3ff2981a9c48/resourceGroups/chalki/providers/Microsoft.Synapse/workspaces/synapse-linkedin/sqlPools/salesdw/resume?api-version=2021-06-01",
+						"value": "https://management.azure.com/subscriptions/be148484-ecb8-4812-bc40-3ff2981a9c48/resourceGroups/chalki/providers/Microsoft.Synapse/workspaces/synapse-linkedin/sqlPools/salesdw/pause?api-version=2021-06-01",
 						"type": "Expression"
 					},
 					"connectVia": {
@@ -24,6 +24,9 @@
 						"type": "IntegrationRuntimeReference"
 					},
 					"method": "POST",
+					"body": {
+						" ": " "
+					},
 					"authentication": {
 						"type": "MSI",
 						"resource": "a97f63fe-b062-49c4-a258-857e0979d172"
