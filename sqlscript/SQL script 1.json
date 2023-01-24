@@ -1,0 +1,20 @@
+{
+	"name": "SQL script 1",
+	"properties": {
+		"folder": {
+			"name": "DedicatedSqlPool"
+		},
+		"content": {
+			"query": "SELECT \n    db.name [Database],\n    ds.edition[Edition],\n    ds.service_objective[Service Objective]\nFROM\n    sys.database_service_objectives ds\nJOIN\n    sys.databases db ON ds.database_id = db.database_id\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "salesdw"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

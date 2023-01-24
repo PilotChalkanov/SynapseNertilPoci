@@ -1,0 +1,36 @@
+{
+	"name": "Pipeline 1",
+	"properties": {
+		"activities": [
+			{
+				"name": "ResumeDWH",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "https://management.azure.com/subscriptions/be148484-ecb8-4812-bc40-3ff2981a9c48/resourceGroups/chalki/providers/Microsoft.Synapse/workspaces/synapse-linkedin/sqlPools/salesdw/resume?api-version=2021-06-01",
+						"type": "Expression"
+					},
+					"connectVia": {
+						"referenceName": "AutoResolveIntegrationRuntime",
+						"type": "IntegrationRuntimeReference"
+					},
+					"method": "POST",
+					"authentication": {
+						"type": "MSI",
+						"resource": "a97f63fe-b062-49c4-a258-857e0979d172"
+					}
+				}
+			}
+		],
+		"annotations": []
+	}
+}
