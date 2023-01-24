@@ -158,6 +158,55 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/Pipeline 1')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "ResumeDWH",
+						"type": "WebActivity",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "https://management.azure.com/subscriptions/be148484-ecb8-4812-bc40-3ff2981a9c48/resourceGroups/chalki/providers/Microsoft.Synapse/workspaces/synapse-linkedin/sqlPools/salesdw/pause?api-version=2021-06-01",
+								"type": "Expression"
+							},
+							"connectVia": {
+								"referenceName": "AutoResolveIntegrationRuntime",
+								"type": "IntegrationRuntimeReference"
+							},
+							"method": "POST",
+							"headers": {},
+							"body": {
+								" ": " "
+							},
+							"authentication": {
+								"type": "MSI",
+								"resource": "a97f63fe-b062-49c4-a258-857e0979d172"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/DestinationDataset_m9g')]",
 			"type": "Microsoft.Synapse/workspaces/datasets",
 			"apiVersion": "2019-06-01-preview",
@@ -397,6 +446,52 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/DistributionCheck')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "DedicatedSqlPool"
+				},
+				"content": {
+					"query": "DBCC PDW_SHOWSPACEUSED('dbo.DailySales')",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "salesdw",
+						"poolName": "salesdw"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/LabelQuery')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "DedicatedSqlPool"
+				},
+				"content": {
+					"query": "SELECT TOP (100) [StoreCode]\n,[SaleDate]\n,[TotalSales]\n,[TotalAmount]\n FROM [dbo].[DailySales]\n OPTION(\n     LABEL='Sales-TOP100'\n )\n\n SELECT * \n FROM sys.dm_pdw_exec_requests r\nORDER BY r.start_time desc",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "salesdw",
+						"poolName": "salesdw"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/PolybaseCopy')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
@@ -420,16 +515,50 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/salesdw')]",
-			"type": "Microsoft.Synapse/workspaces/sqlPools",
+			"name": "[concat(parameters('workspaceName'), '/SQL script 1')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
-				"collation": "SQL_Latin1_General_CP1_CI_AS",
-				"maxSizeBytes": 263882790666240,
-				"annotations": []
+				"folder": {
+					"name": "DedicatedSqlPool"
+				},
+				"content": {
+					"query": "SELECT \n    db.name [Database],\n    ds.edition[Edition],\n    ds.service_objective[Service Objective]\nFROM\n    sys.database_service_objectives ds\nJOIN\n    sys.databases db ON ds.database_id = db.database_id\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "salesdw"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
 			},
-			"dependsOn": [],
-			"location": "uksouth"
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/create_logical_DWH')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "ServerlessPool"
+				},
+				"content": {
+					"query": "CREATE DATABASE SalesLDW\nALTER DATABASE SalesLDW COLLATE Latin1_General_100_BIN2_UTF8;\n\nCREATE MASTER KEY ENCRYPTION BY PASSWORD = 'SuperSecretEncryptionKey$$';\n\nCREATE DATABASE SCOPED CREDENTIAL SalesStorageCredentials\nWITH IDENTITY = 'SHARED ACCESS SIGNATURE',\n    SECRET = '?sv=2020-02-10&st=2023-01-08T11%3A01%3A30Z&se=2023-01-16T11%3A01%3A00Z&sr=d&sp=racwdlmeop&sig=b5STnvN0HB1PuGCO04YhGaBxl4%2FOPyOd60ye%2BQs%2B%2F8E%3D&sdd=1';\n\nCREATE EXTERNAL DATA SOURCE SalesData WITH (\n    CREDENTIAL = SalesStorageCredentials,\n    LOCATION = 'https://chalkilinkedin.blob.core.windows.net');\n\nCREATE SCHEMA LDW authorization dbo;\n\nCREATE VIEW LDW.DailySalesView\nAS\nSELECT *,\nCAST(rows.filepath(1) AS DATE) AS IngestDate\nFROM \nOPENROWSET(\n    BULK'serverless-data/PartitionedSalesData/*.csv',\n    DATA_SOURCE = 'SalesData',\n    PARSER_VERSION = '2.0',\n    FORMAT = 'CSV',\n    FIRSTROW = 2\n)\nWITH (\n    StoreCode VARCHAR(200) 1,\n    TotalSales BIGINT 2,\n    TotalAmount BIGINT 3\n)\nAS rows;\n\nSELECT TOP 10 * FROM LDW.DailySalesView;\n\n\nCREATE VIEW LDW.StoresView\nAS\nSELECT *\nFROM\nOPENROWSET\n(\n    BULK'stores/stores.csv',\n    DATA_SOURCE = 'SalesData',\n    PARSER_VERSION = '2.0',\n    FORMAT = 'csv',\n    FIRSTROW = 2\n)\nWITH (\n    City VARCHAR(100) 1,\n    Code VARCHAR(10) 2,\n    Size VARCHAR(10) 3,\n    Lattitude VARCHAR(100) 4,\n    Longitude VARCHAR(100) 5,\n    Population BIGINT 6,\n    State VARCHAR(200) 7\n)\nAS rows\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "SalesLDW",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('workspaceName'), '/sales_data_discovery_01')]",
@@ -478,7 +607,7 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/create_logical_DWH')]",
+			"name": "[concat(parameters('workspaceName'), '/sales_excer')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
@@ -486,30 +615,7 @@
 					"name": "ServerlessPool"
 				},
 				"content": {
-					"query": "CREATE DATABASE SalesLDW\nALTER DATABASE SalesLDW COLLATE Latin1_General_100_BIN2_UTF8;\n\nCREATE MASTER KEY ENCRYPTION BY PASSWORD = 'SuperSecretEncryptionKey$$';\n\nCREATE DATABASE SCOPED CREDENTIAL SalesStorageCredentials\nWITH IDENTITY = 'SHARED ACCESS SIGNATURE',\n    SECRET = '?sv=2020-02-10&st=2023-01-08T11%3A01%3A30Z&se=2023-01-16T11%3A01%3A00Z&sr=d&sp=racwdlmeop&sig=b5STnvN0HB1PuGCO04YhGaBxl4%2FOPyOd60ye%2BQs%2B%2F8E%3D&sdd=1';\n\nCREATE EXTERNAL DATA SOURCE SalesData WITH (\n    CREDENTIAL = SalesStorageCredentials,\n    LOCATION = 'https://chalkilinkedin.blob.core.windows.net');\n\nCREATE SCHEMA LDW authorization dbo;\n\nCREATE VIEW LDW.DailySalesView\nAS\nSELECT *,\nCAST(rows.filepath(1) AS DATE) AS IngestDate\nFROM \nOPENROWSET(\n    BULK'serverless-data/PartitionedSalesData/*.csv',\n    DATA_SOURCE = 'SalesData',\n    PARSER_VERSION = '2.0',\n    FORMAT = 'CSV',\n    FIRSTROW = 2\n)\nWITH (\n    StoreCode VARCHAR(200) 1,\n    TotalSales BIGINT 2,\n    TotalAmount BIGINT 3\n)\nAS rows;\n\nSELECT TOP 10 * FROM LDW.DailySalesView;\n\n\nCREATE VIEW LDW.StoresView\nAS\nSELECT *\nFROM\nOPENROWSET\n(\n    BULK'stores/stores.csv',\n    DATA_SOURCE = 'SalesData',\n    PARSER_VERSION = '2.0',\n    FORMAT = 'csv',\n    FIRSTROW = 2\n)\nWITH (\n    City VARCHAR(100) 1,\n    Code VARCHAR(10) 2,\n    Size VARCHAR(10) 3,\n    Lattitude VARCHAR(100) 4,\n    Longitude VARCHAR(100) 5,\n    Population BIGINT 6,\n    State VARCHAR(200) 7\n)\nAS rows\n",
-					"metadata": {
-						"language": "sql"
-					},
-					"currentConnection": {
-						"databaseName": "SalesLDW",
-						"poolName": "Built-in"
-					},
-					"resultLimit": 5000
-				},
-				"type": "SqlQuery"
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/stores_LDW')]",
-			"type": "Microsoft.Synapse/workspaces/sqlscripts",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"folder": {
-					"name": "ServerlessPool"
-				},
-				"content": {
-					"query": "CREATE DATABASE SCOPED CREDENTIAL StoresStorageCredentials\nWITH IDENTITY = 'SHARED ACCESS SIGNATURE',\n    SECRET = '?sv=2020-02-10&st=2023-01-08T11%3A45%3A15Z&se=2023-01-17T11%3A45%3A00Z&sr=c&sp=racwdlmeop&sig=U%2F75AXku49%2BMs0Xie%2Bs7PuKxbZqvSqG16HOhTzEb7q0%3D';\n\nCREATE EXTERNAL DATA SOURCE StoresData WITH (\n    CREDENTIAL = StoresStorageCredentials,\n    LOCATION = 'https://chalkilinkedin.blob.core.windows.net');\n\n\nCREATE VIEW LDW.StoresView\nAS\nSELECT *\nFROM\nOPENROWSET\n(\n    BULK'stores/stores.csv',\n    DATA_SOURCE = 'StoresData',\n    PARSER_VERSION = '2.0',\n    FORMAT = 'csv',\n    FIRSTROW = 2\n)\nWITH (\n    City VARCHAR(100) 1,\n    Code VARCHAR(10) 2,\n    Size VARCHAR(10) 3,\n    Lattitude VARCHAR(100) 4,\n    Longitude VARCHAR(100) 5,\n    Population BIGINT 6,\n    State VARCHAR(200) 7\n)\nAS rows",
+					"query": "SELECT TOP 10\nrows.filepath(1) as year_sales,\nrows.filepath(2) as month_sales,\nrows.filepath(3) as day_sales,\nCAST(CONCAT(rows.filepath(1),'-',rows.filepath(2),'-',rows.filepath(3)) AS DATE) AS IngestDate,\nrows.filename() as fname\n\nFROM \nOPENROWSET\n(\n    BULK 'https://chalkilinkedin.blob.core.windows.net/sales-excercises/*/*/*.csv',\n    PARSER_VERSION = '2.0',\n    FORMAT = 'CSV',\n    FIRST_ROW = 2\n)\nAS rows",
 					"metadata": {
 						"language": "sql"
 					},
@@ -570,7 +676,7 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/sales_excer')]",
+			"name": "[concat(parameters('workspaceName'), '/stores_LDW')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
@@ -578,7 +684,7 @@
 					"name": "ServerlessPool"
 				},
 				"content": {
-					"query": "SELECT TOP 10\nrows.filepath(1) as year_sales,\nrows.filepath(2) as month_sales,\nrows.filepath(3) as day_sales,\nCAST(CONCAT(rows.filepath(1),'-',rows.filepath(2),'-',rows.filepath(3)) AS DATE) AS IngestDate,\nrows.filename() as fname\n\nFROM \nOPENROWSET\n(\n    BULK 'https://chalkilinkedin.blob.core.windows.net/sales-excercises/*/*/*.csv',\n    PARSER_VERSION = '2.0',\n    FORMAT = 'CSV',\n    FIRST_ROW = 2\n)\nAS rows",
+					"query": "CREATE DATABASE SCOPED CREDENTIAL StoresStorageCredentials\nWITH IDENTITY = 'SHARED ACCESS SIGNATURE',\n    SECRET = '?sv=2020-02-10&st=2023-01-08T11%3A45%3A15Z&se=2023-01-17T11%3A45%3A00Z&sr=c&sp=racwdlmeop&sig=U%2F75AXku49%2BMs0Xie%2Bs7PuKxbZqvSqG16HOhTzEb7q0%3D';\n\nCREATE EXTERNAL DATA SOURCE StoresData WITH (\n    CREDENTIAL = StoresStorageCredentials,\n    LOCATION = 'https://chalkilinkedin.blob.core.windows.net');\n\n\nCREATE VIEW LDW.StoresView\nAS\nSELECT *\nFROM\nOPENROWSET\n(\n    BULK'stores/stores.csv',\n    DATA_SOURCE = 'StoresData',\n    PARSER_VERSION = '2.0',\n    FORMAT = 'csv',\n    FIRSTROW = 2\n)\nWITH (\n    City VARCHAR(100) 1,\n    Code VARCHAR(10) 2,\n    Size VARCHAR(10) 3,\n    Lattitude VARCHAR(100) 4,\n    Longitude VARCHAR(100) 5,\n    Population BIGINT 6,\n    State VARCHAR(200) 7\n)\nAS rows",
 					"metadata": {
 						"language": "sql"
 					},
@@ -593,50 +699,16 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/LabelQuery')]",
-			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"name": "[concat(parameters('workspaceName'), '/salesdw')]",
+			"type": "Microsoft.Synapse/workspaces/sqlPools",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
-				"folder": {
-					"name": "DedicatedSqlPool"
-				},
-				"content": {
-					"query": "SELECT TOP (100) [StoreCode]\n,[SaleDate]\n,[TotalSales]\n,[TotalAmount]\n FROM [dbo].[DailySales]\n OPTION(\n     LABEL='Sales-TOP100'\n )\n\n SELECT * \n FROM sys.dm_pdw_exec_requests r\nORDER BY r.start_time desc",
-					"metadata": {
-						"language": "sql"
-					},
-					"currentConnection": {
-						"databaseName": "salesdw",
-						"poolName": "salesdw"
-					},
-					"resultLimit": 5000
-				},
-				"type": "SqlQuery"
+				"collation": "SQL_Latin1_General_CP1_CI_AS",
+				"maxSizeBytes": 263882790666240,
+				"annotations": []
 			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/DistributionCheck')]",
-			"type": "Microsoft.Synapse/workspaces/sqlscripts",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"folder": {
-					"name": "DedicatedSqlPool"
-				},
-				"content": {
-					"query": "DBCC PDW_SHOWSPACEUSED('dbo.DailySales')",
-					"metadata": {
-						"language": "sql"
-					},
-					"currentConnection": {
-						"databaseName": "salesdw",
-						"poolName": "salesdw"
-					},
-					"resultLimit": 5000
-				},
-				"type": "SqlQuery"
-			},
-			"dependsOn": []
+			"dependsOn": [],
+			"location": "uksouth"
 		}
 	]
 }
